@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NBA Garbage Time Hub</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        body { background: #121212; color: white; font-family: sans-serif; padding: 20px; text-align: center; }
+        .game-card { background: #1e1e1e; border-left: 5px solid #ff6b00; margin: 10px auto; padding: 15px; max-width: 500px; display: flex; justify-content: space-between; border-radius: 5px; }
+        .highlight { color: #00ff41; font-weight: bold; font-size: 1.2rem; }
+    </style>
+</head>
+<body>
+    <h1>NBA BLOWOUT TRACKER</h1>
+    <div id="container">Loading live data from GitHub...</div>
+
+    <script>
+        const USER = "bjk12345993"; // <-- CHANGE THIS
+        const URL = `https://raw.githubusercontent.com/${USER}/nba-blowout-tracker/main/nba_data.csv`;
+
+        async function load() {
+            const res = await fetch(URL);
+            const csv = await res.text();
+            Papa.parse(csv, {
+                header: true,
+                complete: (results) => {
+                    const html = results.data.map(game => `
+                        <div class="game-card">
+                            <span>${game.Away} @ ${game.Home}</span>
+                            <span class="highlight">${parseInt(game.Away_L4) + parseInt(game.Home_L4)} Pts</span>
+                        </div>
+                    `).join('');
+                    document.getElementById('container').innerHTML = html;
+                }
+            });
+        }
+        load();
+    </script>
+</body>
+</html>
