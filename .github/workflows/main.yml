@@ -1,0 +1,24 @@
+name: Update NBA Data
+on:
+  schedule:
+    - cron: '0 12 * * *' # Runs at 12:00 UTC daily
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with: { python-version: '3.9' }
+      - name: Install dependencies
+        run: pip install nba_api pandas
+      - name: Run Scraper
+        run: python scraper.py
+      - name: Save Data
+        run: |
+          git config --global user.name "NBA-Bot"
+          git config --global user.email "bot@github.com"
+          git add nba_data.csv
+          git commit -m "Auto-update stats" || exit 0
+          git push
