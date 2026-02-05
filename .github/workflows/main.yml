@@ -1,9 +1,10 @@
 name: Update NBA Data
 on:
   schedule:
-    - cron: '0 12 * * *' 
-  workflow_dispatch:
+    - cron: '0 12 * * *' # Runs daily
+  workflow_dispatch: # Allows you to click "Run Workflow" manually
 
+# This is the "Nuclear" permission fix
 permissions:
   contents: write
 
@@ -11,26 +12,29 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          # This ensures the robot uses the right credentials from the start
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
-        with: { python-version: '3.9' }
+        with:
+          python-version: '3.9'
 
-      - name: Install dependencies
+      - name: Install Tools
         run: pip install nba_api pandas
 
       - name: Run Scraper
         run: python scraper.py
 
-      - name: Save Data
+      - name: Force Save Data
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # This line ensures the file exists so the 'add' doesn't fail
+          touch nba_data.csv 
+          
           git add nba_data.csv
-          # The '|| echo' part prevents it from failing if there's no new data
-          git commit -m "Auto-update NBA stats" || echo "No changes to commit"
-          git push origin main
+          
+          # Only commit if the file actually changed
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update NBA stats" && git push origin main)
