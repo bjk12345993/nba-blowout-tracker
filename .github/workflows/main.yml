@@ -4,27 +4,33 @@ on:
     - cron: '0 12 * * *' 
   workflow_dispatch:
 
-# --- THIS IS THE PART WE ADDED ---
 permissions:
   contents: write
-# ---------------------------------
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          # This ensures the robot uses the right credentials from the start
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with: { python-version: '3.9' }
+
       - name: Install dependencies
         run: pip install nba_api pandas
+
       - name: Run Scraper
         run: python scraper.py
+
       - name: Save Data
         run: |
-          git config --global user.name "NBA-Bot"
-          git config --global user.email "bot@github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add nba_data.csv
-          git commit -m "Auto-update stats" || exit 0
-          git push
+          # The '|| echo' part prevents it from failing if there's no new data
+          git commit -m "Auto-update NBA stats" || echo "No changes to commit"
+          git push origin main
