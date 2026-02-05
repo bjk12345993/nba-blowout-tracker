@@ -1,8 +1,14 @@
 name: Update NBA Data
 on:
   schedule:
-    - cron: '0 12 * * *' # Runs at 12:00 UTC daily
+    - cron: '0 12 * * *' 
   workflow_dispatch:
+
+# --- THIS IS THE PART WE ADDED ---
+permissions:
+  contents: write
+# ---------------------------------
+
 jobs:
   build:
     runs-on: ubuntu-latest
